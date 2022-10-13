@@ -6,7 +6,6 @@
 <img src="https://img.shields.io/badge/vue-3.2.25-brightgreen"/>
 <img src="https://img.shields.io/badge/element--plus-2.0.1-green"/>
 <img src="https://img.shields.io/badge/gorm-1.22.5-red"/>
-<img src="https://img.shields.io/badge/gin-vue-admin-2.4.x-green"/>
 </div>
 
 本项目基于 [gin-vue-admin v2.5.0](https://github.com/flipped-aurora/gin-vue-admin/),感谢原框架作者们的付出
