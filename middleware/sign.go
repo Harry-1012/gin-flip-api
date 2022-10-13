@@ -71,7 +71,6 @@ func CheckSign() gin.HandlerFunc {
 			return
 		}
 		signStr := reqData.RequestParams("sign") + apiSecret
-		fmt.Println(signStr, "signStr")
 		signReal := SignEncode(signStr)
 		if signReq != signReal {
 			response.Result(401, gin.H{}, SignWrong, c)
