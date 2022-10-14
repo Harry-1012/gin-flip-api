@@ -1,6 +1,6 @@
 module github.com/haoleiqin/gin-flip-api
 
-go 1.18
+go 1.19
 
 require (
 	github.com/aliyun/aliyun-oss-go-sdk v2.1.6+incompatible

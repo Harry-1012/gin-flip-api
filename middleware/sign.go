@@ -1,11 +1,13 @@
 package middleware
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/gin-gonic/gin"
 	"github.com/haoleiqin/gin-flip-api/global"
@@ -25,7 +27,6 @@ func CheckSign() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		jsonBody := make(map[string]interface{}) //注意该结构接受的内容
 		c.BindJSON(&jsonBody)
-		fmt.Println(jsonBody, "jsonBody")
 		if jsonBody["sign"] == nil {
 			response.FailWithDetailed(gin.H{}, SignNull, c)
 			c.Abort()
@@ -34,6 +35,7 @@ func CheckSign() gin.HandlerFunc {
 		signReq := fmt.Sprintf("%v", jsonBody["sign"])
 		delete(jsonBody, "sign")
 		signStrByte, _ := json.Marshal(jsonBody)
+		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(signStrByte)) // 把body再写回去,不然别的地方取不到
 		apikeyRedisPrex := "yld_partner_apikey_prefix_"
 		apiKey := fmt.Sprintf("%v", jsonBody["api_key"])
 		if apiKey == "" {
