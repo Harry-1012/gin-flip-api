@@ -12,4 +12,7 @@
 
 首次使用,安装数据库,需要将根目录的main.go文件中的: //initialize.RegisterTables(global.GVA_DB) // 初始化admin库表,这一行取消注释,用来初始化数据库,数据库初始化完成后建议注释掉这一行,不然那每次启动都会遍历数据库表查询
 
+api请求格式:
+Content-Type:application/json
+
 管理后台[gin-flip-admin](https://github.com/haoleiqin/gin-flip-admin/)

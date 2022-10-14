@@ -17,23 +17,31 @@ import (
 var (
 	SignWrong  = "sign wrong"
 	SignNull   = "sign null"
-	ApiKeyNull = "sign null"
+	ApiKeyNull = "api_key null"
 	UserWrong  = "用户异常"
 )
 
 func CheckSign() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		reqData := &utils.RequestHttp{
-			Ctx:    c,
-			Params: map[string]interface{}{},
+		jsonBody := make(map[string]interface{}) //注意该结构接受的内容
+		c.BindJSON(&jsonBody)
+		fmt.Println(jsonBody, "jsonBody")
+		if jsonBody["sign"] == nil {
+			response.FailWithDetailed(gin.H{}, SignNull, c)
+			c.Abort()
+			return
 		}
+		signReq := fmt.Sprintf("%v", jsonBody["sign"])
+		delete(jsonBody, "sign")
+		signStrByte, _ := json.Marshal(jsonBody)
 		apikeyRedisPrex := "yld_partner_apikey_prefix_"
-		apiKey := c.Request.FormValue("api_key")
+		apiKey := fmt.Sprintf("%v", jsonBody["api_key"])
 		if apiKey == "" {
 			response.FailWithDetailed(gin.H{}, ApiKeyNull, c)
 			c.Abort()
 			return
 		}
+
 		apiSecret := ""
 		var user system.SysUser
 		userJsonGet, redisGetErr := global.GVA_REDIS.Get(context.Background(), apikeyRedisPrex+apiKey).Result()
@@ -64,17 +72,11 @@ func CheckSign() gin.HandlerFunc {
 				_ = global.GVA_REDIS.Set(context.Background(), apikeyRedisPrex+apiKey, userJson, dr).Err()
 			}
 		}
-		signReq := c.Request.FormValue("sign")
-		if signReq == "" {
-			response.FailWithDetailed(gin.H{}, SignNull, c)
-			c.Abort()
-			return
-		}
-		signStr := reqData.RequestParams("sign") + apiSecret
+		signStr := string(signStrByte) + apiSecret
 		signReal := SignEncode(signStr)
 		if signReq != signReal {
 			response.Result(401, gin.H{}, SignWrong, c)
-			global.GVA_LOG.Warn("api接口验签失败!请求sign:" + signReq + " 真实sign:" + signReal)
+			global.GVA_LOG.Warn("api接口验签失败!请求sign:" + signReq + " 真实sign:" + signReal + " 签名字符串:" + signStr)
 			c.Abort()
 			return
 		}
