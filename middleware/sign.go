@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 
 	"github.com/gin-gonic/gin"
 	"github.com/haoleiqin/gin-flip-api/global"
@@ -51,7 +51,7 @@ func CheckSign() gin.HandlerFunc {
 		}
 		// /排序
 		signStrByte, _ := json.Marshal(jsonBodySort)
-		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(signStrByte)) // 把body再写回去,不然别的地方取不到
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(signStrByte)) // 把body再写回去,不然别的地方取不到
 		// 生成签名
 		// sign := utils.GetSign([]byte(signStrByte), "private.pem")
 		// fmt.Println("realsign:", string(sign))
@@ -61,8 +61,6 @@ func CheckSign() gin.HandlerFunc {
 		acceptsign := signReq
 		//验证签名
 		signVerifyResult := utils.VerifySign(acceptmsg, acceptsign, "public.pem")
-		fmt.Println("验证结果：", signVerifyResult)
-
 		//比较签名
 		if !signVerifyResult {
 			response.Result(401, gin.H{}, SignWrong, c)
