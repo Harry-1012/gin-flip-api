@@ -20,6 +20,4 @@ type SysUser struct {
 	Authorities []SysAuthority `json:"authorities" gorm:"many2many:sys_user_authority;"`
 	Phone       string         `json:"phone"  gorm:"comment:用户手机号"` // 用户角色ID
 	Email       string         `json:"email"  gorm:"comment:用户邮箱"`  // 用户邮箱
-	ApiKey      string         `json:"api_key"  gorm:"comment:api_key"`
-	ApiSecret   string         `json:"api_secret"  gorm:"comment:api_secret"`
 }
