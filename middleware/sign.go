@@ -57,8 +57,6 @@ func CheckSign() gin.HandlerFunc {
 		}
 		signStrByte, _ := json.Marshal(jsonBodySort)
 		c.Request.Body = io.NopCloser(bytes.NewBuffer(signStrByte)) // 把body再写回去,不然别的地方取不到
-		// 生成签名
-		sign := utils.GetSign(signStrByte, "private.pem")
 		// fmt.Println("realsign:", string(sign))
 		//接受到的消息
 		acceptmsg := []byte(signStrByte)
@@ -68,7 +66,9 @@ func CheckSign() gin.HandlerFunc {
 		signVerifyResult := utils.VerifySign(acceptmsg, acceptsign, "public.pem")
 		//比较签名
 		if !signVerifyResult {
-			global.GVA_LOG.Warn("api接口验签失败!请求:" + string(signStrByte))
+			// 生成签名
+			sign := utils.GetSign(signStrByte, "private.pem")
+			global.GVA_LOG.Warn("api接口验签失败!请求:" + string(signStrByte) + " 接收到的签名:" + acceptsign + " 正确真实签名:" + sign)
 			response.Result(401, gin.H{}, SignWrong, c)
 			c.Abort()
 			return
