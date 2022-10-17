@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"sort"
 
 	"github.com/gin-gonic/gin"
 	"github.com/haoleiqin/gin-flip-api/global"
@@ -43,17 +44,21 @@ func CheckSign() gin.HandlerFunc {
 
 		//先按key 排序 升序 ASCII 升序
 		keys := make([]string, 0, len(jsonBody))
-		jsonBodySort := make(map[string]interface{})
 		if len(jsonBody) > 0 {
-			for _, k := range keys {
-				jsonBodySort[k] = jsonBody[k]
+			for k := range jsonBody {
+				keys = append(keys, k)
 			}
 		}
 		// /排序
+		sort.Strings(keys)
+		jsonBodySort := make(map[string]interface{})
+		for _, k := range keys {
+			jsonBodySort[k] = jsonBody[k]
+		}
 		signStrByte, _ := json.Marshal(jsonBodySort)
 		c.Request.Body = io.NopCloser(bytes.NewBuffer(signStrByte)) // 把body再写回去,不然别的地方取不到
 		// 生成签名
-		// sign := utils.GetSign([]byte(signStrByte), "private.pem")
+		// sign := utils.GetSign(signStrByte, "private.pem")
 		// fmt.Println("realsign:", string(sign))
 		//接受到的消息
 		acceptmsg := []byte(signStrByte)
@@ -63,8 +68,8 @@ func CheckSign() gin.HandlerFunc {
 		signVerifyResult := utils.VerifySign(acceptmsg, acceptsign, "public.pem")
 		//比较签名
 		if !signVerifyResult {
+			global.GVA_LOG.Warn("api接口验签失败!请求:" + string(signStrByte))
 			response.Result(401, gin.H{}, SignWrong, c)
-			global.GVA_LOG.Warn("api接口验签失败!请求sign:" + signReq + "签名字符串:" + string(signStrByte))
 			c.Abort()
 			return
 		}
